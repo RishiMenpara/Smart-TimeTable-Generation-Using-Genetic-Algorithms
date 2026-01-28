@@ -1,0 +1,326 @@
+!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Timetable Generator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background: #f4f6f8;
+      color: #333;
+    }
+
+    h1, h2, h3 {
+      margin-top: 0;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      padding: 30px 10px;
+      background: #1e293b;
+      color: white;
+      border-radius: 8px;
+      margin-bottom: 30px;
+    }
+
+    .header p {
+      opacity: 0.85;
+    }
+
+    /* Sections */
+    .section {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 25px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+
+    .section-title {
+      margin-bottom: 15px;
+      border-bottom: 2px solid #e5e7eb;
+      padding-bottom: 8px;
+      font-size: 18px;
+    }
+
+    /* Form Layout */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 15px;
+    }
+
+    label {
+      font-size: 13px;
+      color: #555;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 4px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .card {
+      border: 1px solid #e5e7eb;
+      padding: 15px;
+      border-radius: 6px;
+      background: #fafafa;
+      margin-bottom: 15px;
+    }
+
+    button {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .btn-add {
+      background: #2563eb;
+      color: white;
+      margin-top: 10px;
+    }
+
+    .btn-generate {
+      background: #16a34a;
+      color: white;
+      width: 100%;
+      font-size: 18px;
+      padding: 14px;
+    }
+
+    .btn-secondary {
+      background: #64748b;
+      color: white;
+      margin-right: 10px;
+    }
+
+    /* Checkbox group */
+    .checkbox-group {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    /* Timetable */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    th {
+      background: #f1f5f9;
+    }
+
+    .output-actions {
+      margin-top: 15px;
+      text-align: right;
+    }
+
+    footer {
+      text-align: center;
+      font-size: 13px;
+      color: #666;
+      margin: 40px 0 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+
+    <!-- 1. Header -->
+    <div class="header">
+      <h1>Timetable Generator</h1>
+      <p>Generate conflict-free academic timetables using basic constraints</p>
+    </div>
+
+    <!-- 2. Class / Subject Input -->
+    <div class="section">
+      <h2 class="section-title">Class / Subject Details</h2>
+      <div id="classContainer"></div>
+      <button class="btn-add" onclick="addClass()">+ Add Class</button>
+    </div>
+
+    <!-- 3. Classroom Input -->
+    <div class="section">
+      <h2 class="section-title">Classroom Details</h2>
+      <div id="roomContainer"></div>
+      <button class="btn-add" onclick="addRoom()">+ Add Classroom</button>
+    </div>
+
+    <!-- 4. Time Configuration -->
+    <div class="section">
+      <h2 class="section-title">Time Configuration</h2>
+      <div class="grid">
+        <div>
+          <label>Day Start Time</label>
+          <input type="time">
+        </div>
+        <div>
+          <label>Day End Time</label>
+          <input type="time">
+        </div>
+        <div>
+          <label>Break Time</label>
+          <input type="time">
+        </div>
+      </div>
+
+      <div style="margin-top:15px;">
+        <label>Active Days</label>
+        <div class="checkbox-group">
+          <label><input type="checkbox"> Mon</label>
+          <label><input type="checkbox"> Tue</label>
+          <label><input type="checkbox"> Wed</label>
+          <label><input type="checkbox"> Thu</label>
+          <label><input type="checkbox"> Fri</label>
+          <label><input type="checkbox"> Sat</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. Constraints -->
+    <div class="section">
+      <h2 class="section-title">Constraints</h2>
+      <div class="grid">
+        <div>
+          <label>Hard Constraints</label>
+          <select multiple>
+            <option>Option 1</option>
+            <option>Option 2</option>
+            <option>Option 3</option>
+            <option>Option 4</option>
+          </select>
+        </div>
+        <div>
+          <label>Soft Constraints</label>
+          <select multiple>
+            <option>Option 1</option>
+            <option>Option 2</option>
+            <option>Option 3</option>
+            <option>Option 4</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. Generate Button -->
+    <button class="btn-generate" onclick="generateTimetable()">Generate Timetable</button>
+
+    <!-- 7. Output -->
+    <div class="section" id="outputSection" style="display:none;">
+      <h2 class="section-title">Generated Timetable (Sample)</h2>
+
+      <table>
+        <tr>
+          <th>Day</th>
+          <th>9–10</th>
+          <th>10–11</th>
+          <th>11–12</th>
+        </tr>
+        <tr>
+          <th>Mon</th>
+          <td>Math</td>
+          <td>Physics</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <th>Tue</th>
+          <td>—</td>
+          <td>CS</td>
+          <td>Math</td>
+        </tr>
+        <tr>
+          <th>Wed</th>
+          <td>Physics</td>
+          <td>—</td>
+          <td>CS</td>
+        </tr>
+      </table>
+
+      <div class="output-actions">
+        <button class="btn-secondary">Download as Image</button>
+        <button class="btn-secondary">Download as Excel</button>
+      </div>
+    </div>
+
+    <footer>
+      Frontend Prototype • Timetable Generator Project
+    </footer>
+  </div>
+
+  <script>
+    function addClass() {
+      const container = document.getElementById("classContainer");
+      container.innerHTML += `
+        <div class="card">
+          <div class="grid">
+            <div><label>Subject Name</label><input></div>
+            <div><label>Standard / Batch</label><input></div>
+            <div><label>Faculty Name</label><input></div>
+            <div><label>Faculty ID</label><input></div>
+            <div><label>Strength</label><input type="number"></div>
+            <div>
+              <label>Duration</label>
+              <select>
+                <option>1 hr</option>
+                <option>1.5 hr</option>
+                <option>2 hr</option>
+              </select>
+            </div>
+            <div><label>Times per Week</label><input type="number"></div>
+          </div>
+        </div>
+      `;
+    }
+
+    function addRoom() {
+      const container = document.getElementById("roomContainer");
+      container.innerHTML += `
+        <div class="card">
+          <div class="grid">
+            <div><label>Classroom ID</label><input></div>
+            <div><label>Capacity</label><input type="number"></div>
+          </div>
+        </div>
+      `;
+    }
+
+    function generateTimetable() {
+      document.getElementById("outputSection").style.display = "block";
+      window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+    }
+
+    // Initial one card
+    addClass();
+    addRoom();
+  </script>
+</body>
+</html>
